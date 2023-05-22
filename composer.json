@@ -1,5 +1,5 @@
 {
-    "name": "axm/view",
+    "name": "axm/views",
 	"description": "Simple, performant and powerful PHP micro-framework for rapid web app & API development",
 	"keywords": [
 		"microframework",
@@ -19,7 +19,7 @@
     ],
 	"autoload": {
 		"psr-4": {
-			"Axm\\View\\": "src"
+			"Axm\\Views\\": "src"
 		}
 	},
 	"minimum-stability": "dev",
