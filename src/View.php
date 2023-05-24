@@ -15,10 +15,6 @@ use Axm\Exception\AxmException;
 
 class View
 {
-    private string $title = '';
-    private static $content = '';
-    private static $file;
-    private static $views;
     private static $data = [];
 
     /**
@@ -144,20 +140,6 @@ class View
     protected static $_cache = ['type' => 'view', 'time' => false, 'group' => false];
 
 
-    public function templatePartial(string $path, array $params = [])
-    {
-        $viewFile = APP_PATH . "/$path.php";
-        if (!is_file($viewFile)) {
-            throw new AxmException(Axm::t('axm', 'El archivo "{view}" no existe.', ['{view}' => $path]));
-        }
-
-        $output = self::captureFile($viewFile, $params, false);
-        // si esta en produccion y se cachea template
-
-        return $output;
-    }
-
-
     public function escape($string)
     {
         return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
@@ -248,6 +230,10 @@ class View
      */
     protected static function saveCache(string $view, string $output, $data)
     {
+        if (static::$viewSaveCache === false) {
+            return false;
+        }
+
         if (isset($data['cache']) && $data['cache'] !== true) {
             return;
         }
@@ -267,10 +253,6 @@ class View
     public static function captureFile(string $file, array $data = [], bool $buffer = true): string
     {
         extract($data);
-        // foreach ($data as $key => $value) {
-        //     ${$key} = $value;
-        // }
-
         if ($buffer) {
             ob_start();
             ob_implicit_flush(false);
@@ -291,32 +273,6 @@ class View
 
         $output = self::captureFile($path, [...($data ?? []), ...self::$tempData], $buffer);
         return $output;
-    }
-
-
-    /**
-     * Incluye una o varias Plantillas
-     * 
-     * @param string $path
-     * @param mixed $params
-     */
-    public static function Template(string $path, array $params = [])
-    {
-        if (empty($path) || is_null($path))  return;
-
-        ob_start();
-        extract($args, EXTR_SKIP);
-
-        $files = explode(',', $path);
-        foreach ($files as $value) :
-            $name = trim($value);
-            if (!is_file(APP_PATH . "/Views/Template/html/$name.php"))
-                throw new AxmException(Axm::t('axm', "El Plantilla: $name no existe. La Plantilla debe ser creada en la dirección: %s", [APP_PATH . '/Views/template/html/']));
-            (!Axm::app()->isLogged()) ?: require_once(APP_PATH . "/Views/template/html/$name.php");
-        endforeach;
-
-        return self::saveCache('view', $layoutPath, $data);
-        // return ob_end_flush();
     }
 
 
